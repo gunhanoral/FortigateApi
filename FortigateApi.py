@@ -42,8 +42,8 @@ class Fortigate:
         #verify=False to permit login even with no valid ssl cert
         self.r = self.s.post(self.login_url, data=payload, verify=False)
 
-        print 'login status:', self.r.status_code
-        #print 'cookie:', self.s.cookies['ccsrftoken']
+        print('login status:', self.r.status_code)
+        #print('cookie:', self.s.cookies['ccsrftoken'])
 
         for cookie in self.s.cookies:
             if cookie.name == 'ccsrftoken':
@@ -53,7 +53,7 @@ class Fortigate:
 
     def Logout(self):
         req = self.s.get(self.logout_url)
-        #print 'logout status:', req.status_code
+        #print('logout status:', req.status_code)
         return req.status_code
 
     # About api request message naming regulations:
@@ -65,9 +65,9 @@ class Fortigate:
 
     def ApiGet(self, url):
         req = self.s.get(self.api_url + url, params={'vdom':self.vdom})
-        #print '----json', req.json()
-        #print '----text', req.text
-        #print 'request status:', r.status_code
+        #print('----json', req.json())
+        #print('----text', req.text)
+        #print('request status:', r.status_code)
         return req
 
     def ApiAdd(self, url, data=None):
@@ -102,20 +102,20 @@ class Fortigate:
         """
         req = self.ApiGet(url)
         data = json.loads(req.text)
-        #print "exists data:", data
-        #print '--------------------------------------'
+        #print("exists data:", data)
+        #print('--------------------------------------')
         for y in range(0,len(data['results'])):
             identical = True 
-            #print '--------'
+            #print('--------')
             for x in range(0,len(objects)):
                 req_res = data['results'][y][objects[x][0]]
                 if (type(req_res) is list):
                     if ((req_res != []) and (objects[x][1] != req_res[0]['name'])):
-                        #print 'object list is different:',objects[x][0], objects[x][1] ,'to',req_res[0]['name']
+                        #print('object list is different:',objects[x][0], objects[x][1] ,'to',req_res[0]['name'])
                         identical = False
                         break
                 elif (objects[x][1] != req_res):
-                    #print 'object is different:', objects[x][0], ':', objects[x][1] ,'to', req_res
+                    #print('object is different:', objects[x][0], ':', objects[x][1] ,'to', req_res)
                     identical = False
                     break	
             if identical: 
@@ -457,7 +457,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             user_name = data['results'][y]['name']
             return_code = self.DelUserLocal(user_name)
-            print 'del user :', user_name, '(', return_code,')'
+            print('del user :', user_name, '(', return_code,')')
             if return_code != 200: return return_code
         return 200
     #
@@ -639,7 +639,7 @@ class Fortigate:
         url = 'cmdb/system/interface/'
         #adding an interface can only be made from the root vdom
         req = self.s.post(self.api_url + url, params={'vdom':'root'}, data=repr(payload))
-        #print 'ApiAdd text:', req.text
+        #print('ApiAdd text:', req.text)
         return req.status_code
 
     def AddVlanInterfaceIdempotent(self, name, interface, vlanid, ip_mask, vdom, mode, allowaccess):
@@ -765,7 +765,7 @@ class Fortigate:
             if self.vdom == data['results'][y]['vdom']:
                 int_name = data['results'][y]['name']
                 return_code = self.DelInterface(int_name)
-                print 'del interface:', int_name, '(', return_code,')'
+                print('del interface:', int_name, '(', return_code,')')
                 if return_code != 200 and int_name.find('ssl.') == -1:
                         final_return_code = return_code
         return final_return_code
@@ -939,7 +939,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             address_name = data['results'][y]['name']
             return_code = self.DelFwAddress(address_name)
-            print 'del fw address :', address_name, '(', return_code,')'
+            print('del fw address :', address_name, '(', return_code,')')
             if return_code != 200: return return_code
         return 200
     #
@@ -1066,7 +1066,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             group_name = data['results'][y]['name']
             return_code = self.DelFwAddressGroup(group_name)
-            print 'del fw address group:', group_name, '(', return_code,')'
+            print('del fw address group:', group_name, '(', return_code,')')
             if return_code != 200: return return_code
         return 200
     #
@@ -1228,7 +1228,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             route_id = data['results'][y]['seq-num']
             return_code = self.DelRouterStaticID(route_id)
-            print 'del route id:', route_id , '(', return_code,')'
+            print('del route id:', route_id , '(', return_code,')')
             if return_code != 200: return return_code
         return 200
     #
@@ -1358,11 +1358,11 @@ class Fortigate:
         objects =  [['srcintf',srcintf],['dstintf',dstintf],['srcaddr',srcaddr],['dstaddr',dstaddr],['service',service],['action',action],['schedule',schedule],['nat',nat],['poolname',poolname],['ippool',ippool],['status',status],['traffic-shaper',traffic_shaper],['traffic-shaper-reverse',traffic_shaper_reverse]] 
         if not (self.Exists('cmdb/firewall/policy/', objects)):
             #object does not exist, create it
-            #print 'AddFwPolicyIdempotent: object does not exists'
+            #print('AddFwPolicyIdempotent: object does not exists')
             return self.AddFwPolicy(srcintf, dstintf, srcaddr, dstaddr, service, action, schedule, nat, poolname, ippool, status, comments, traffic_shaper, traffic_shaper_reverse)
         else: 
             #object already Exists
-            #print 'AddFwPolicyIdempotent: object already exists'
+            #print('AddFwPolicyIdempotent: object already exists')
             return 200
 
     def SetFwPolicy(self, id, srcintf='any', dstintf='any', srcaddr='all', dstaddr='all', service='ALL', action='accept', schedule='always', nat='disable', poolname='[]', ippool='disable', status='enable', comments='', traffic_shaper='', traffic_shaper_reverse=''):
@@ -1506,7 +1506,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             policy_id = data['results'][y]['policyid']
             return_code = self.DelFwPolicyID(policy_id)
-            print 'del fw policy id:', policy_id ,  '(', return_code,')'
+            print('del fw policy id:', policy_id ,  '(', return_code,')')
             if return_code != 200: return return_code
         return 200
     
@@ -1565,7 +1565,7 @@ class Fortigate:
         if traffic_shaper_reverse != '':
             objects.append(['traffic-shaper-reverse',traffic_shaper_reverse])
         
-        print objects
+        print(objects)
 
         #get all fw policy
         req = self.ApiGet('cmdb/firewall/policy/')
@@ -1578,15 +1578,15 @@ class Fortigate:
                 req_res = data['results'][y][objects[x][0]]
                 if (type(req_res) is list):
                     if ((req_res != []) and (objects[x][1] != req_res[0]['name'])):
-                        #print 'object list is different:',objects[x][0], objects[x][1] ,'to',req_res[0]['name']
+                        #print('object list is different:',objects[x][0], objects[x][1] ,'to',req_res[0]['name'])
                         identical = False
                         break
                 elif (objects[x][1] != req_res):
-                    print 'object is different:', objects[x][0], ':', objects[x][1] ,'to', req_res
+                    print('object is different:', objects[x][0], ':', objects[x][1] ,'to', req_res)
                     identical = False
                     break
             if identical: 
-                #print 'policyid:', data['results'][y]['policyid']
+                #print('policyid:', data['results'][y]['policyid'])
                 return data['results'][y]['policyid']
         return 0
     #
@@ -1747,7 +1747,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             service_name = data['results'][y]['name']
             return_code = self.DelFwService(service_name)
-            print 'del fw service :', service_name, '(', return_code,')'
+            print('del fw service :', service_name, '(', return_code,')')
             #if return_code != 200: return return_code
         return 200
     #
@@ -1874,7 +1874,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             service_group_name = data['results'][y]['name']
             return_code = self.DelFwServiceGroup(service_group_name)
-            print 'del fw service group:', service_group_name, '(', return_code,')'
+            print('del fw service group:', service_group_name, '(', return_code,')')
             if return_code != 200: return return_code
         return 200
     #
@@ -2016,7 +2016,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             traffic_shaper_name = data['results'][y]['name']
             return_code = self.DelTrafficShaper(traffic_shaper_name)
-            print 'del traffic shaper:', traffic_shaper_name, '(', return_code,')'
+            print('del traffic shaper:', traffic_shaper_name, '(', return_code,')')
             if return_code != 200: return return_code
         return 200
     #
@@ -2183,7 +2183,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             vip_name = data['results'][y]['name']
             return_code = self.DelFwVIP(vip_name)
-            print 'del vip:', vip_name, '(', return_code,')'
+            print('del vip:', vip_name, '(', return_code,')')
             if return_code != 200: return return_code
         return 200
     #
@@ -2310,7 +2310,7 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             ippool_name = data['results'][y]['name']
             return_code = self.DelFwIPpool(ippool_name)
-            print 'del ip pool:', ippool_name , 'res:', return_code
+            print('del ip pool:', ippool_name , 'res:', return_code)
             if return_code != 200: return return_code
         return 200 
     #
@@ -2516,9 +2516,9 @@ class Fortigate:
             cur_phase1 = data['results'][y]['phase1name']
             if  cur_phase1 == name:
                 cur_phase2 = data['results'][y]['name']
-                #print 'del phase2:', cur_phase2
+                #print('del phase2:', cur_phase2)
                 self.DelVPNipsecPhase2(cur_phase2)
-        #print 'del phase1:', cur_phase1
+        #print('del phase1:', cur_phase1)
         return self.DelVPNipsecPhase1(cur_phase1)      
 
 
@@ -2577,6 +2577,6 @@ class Fortigate:
         for y in range(0,len(data['results'])):
             vpn_name = data['results'][y]['name']
             return_code = self.DelVPNipsec(vpn_name)
-            print 'del vpn:', vpn_name , 'res:', return_code
+            print('del vpn:', vpn_name , 'res:', return_code)
             if return_code != 200: return return_code
         return 200 

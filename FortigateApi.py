@@ -6,7 +6,7 @@
 # v1.3 https enabled
 # v1.4 add http put method
 # v1.5 traffic shaper on  fw policy
-# v1.6 add access to user local 
+# v1.6 add access to user local
 # v1.7 correction DelAllUserLocal
 # v1.8 creation method DelAllVPNipsec() + correction DelSystemAdmin()
 # v1.9 add AddFwAddressRange
@@ -26,7 +26,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 class Fortigate:
     def __init__(self, ip, vdom, user, passwd):
         ipaddr = 'https://' + ip
-        
+
         # URL definition
         self.login_url = ipaddr + '/logincheck'
         self.logout_url = ipaddr + '/logout'
@@ -49,7 +49,7 @@ class Fortigate:
             if cookie.name == 'ccsrftoken':
                 csrftoken = cookie.value[1:-1]
                 self.s.headers.update({'X-CSRFTOKEN': csrftoken})
-        
+
 
     def Logout(self):
         req = self.s.get(self.logout_url)
@@ -82,18 +82,18 @@ class Fortigate:
         req = self.s.put(self.api_url + url, params={'vdom':self.vdom}, data=repr(data))
         return req.status_code
 
-    #-----------------------------------------------------------------------------------------        
+    #-----------------------------------------------------------------------------------------
 
     def Exists(self, url, objects):
         """
         Test if the objects exist in the url.
 
         Parameters
-        ----------        
+        ----------
         url: the api url to test the objects (type string)
         objects: the list of objects you want to test (type [[]])
             ex:
-                objects =  [['name','srv-A'],['subnet','10.1.1.1/32']] 
+                objects =  [['name','srv-A'],['subnet','10.1.1.1/32']]
                 self.Exists('cmdb/firewall/address/', objects)
 
         Returns
@@ -105,7 +105,7 @@ class Fortigate:
         #print("exists data:", data)
         #print('--------------------------------------')
         for y in range(0,len(data['results'])):
-            identical = True 
+            identical = True
             #print('--------')
             for x in range(0,len(objects)):
                 req_res = data['results'][y][objects[x][0]]
@@ -117,19 +117,19 @@ class Fortigate:
                 elif (objects[x][1] != req_res):
                     #print('object is different:', objects[x][0], ':', objects[x][1] ,'to', req_res)
                     identical = False
-                    break	
-            if identical: 
-                return True 
-        return False 
+                    break
+            if identical:
+                return True
+        return False
 	#
     def GetVdom(self, name=''):
         '''
         Return the json vdom object, when the param name is defined it returns the selected object, without name: return all the objects.
 
         Parameters
-        ----------        
+        ----------
         name: the vdom object name (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -142,7 +142,7 @@ class Fortigate:
         Create a new vdom.
 
         Parameters
-        ----------        
+        ----------
         name: name of the vdom (type string)
 
         Returns
@@ -151,17 +151,17 @@ class Fortigate:
         """
         payload = {'json':
                     {
-                    'name':  name 
-                    }     
+                    'name':  name
+                    }
                 }
         return self.ApiAdd('cmdb/system/vdom/', payload)
-    
+
     def AddVdomIdempotent(self, name):
         """
         Create a new vdom, return ok if it already exist.
 
         Parameters
-        ----------        
+        ----------
         name: name of the vdom (type string)
 
         Returns
@@ -173,7 +173,7 @@ class Fortigate:
         if not (self.Exists('cmdb/system/vdom/', objects)):
             #object does not exist, create it
             return self.AddVdom(name)
-        else: 
+        else:
             #object already Exists
             return 200
 
@@ -181,7 +181,7 @@ class Fortigate:
         payload = {'json':
                 {
                 'name': 'vdom'
-                }     
+                }
             }
         return self.ApiDelete('cmdb/system/vdom/' + name + '/', data=payload)
 
@@ -191,9 +191,9 @@ class Fortigate:
         Return the json system admin object, when the param name is defined it returns the selected object, without name: return all the objects.
 
         Parameters
-        ----------        
+        ----------
         name: the system admin object name (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -206,16 +206,16 @@ class Fortigate:
         Create a system admin on the vdom.
 
         Parameters
-        ----------  
+        ----------
         name: the system admin name (type string)
         password: the system admin password (type string)
         profile: the profile, choice: prof_admin/super_admin (type string)(default prof_admin)
         remote_auth: choice: enable/disable (type string)(default disable)
-            
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         password = str(password)
         #profile: prof_admin/super_admin
@@ -230,32 +230,32 @@ class Fortigate:
                         "name":self.vdom,
                             }
                          ]
-                    }     
+                    }
                 }
         return self.ApiAdd('cmdb/system/admin/', payload)
-   
+
     def AddSystemAdminIdempotent(self, name, password, profile='prof_admin', remote_auth='disable'):
         """
         Create a system admin on the vdom, return ok if it already exist.
 
         Parameters
-        ----------  
+        ----------
         name: the system admin name (type string)
         password: the system admin password (type string)
         profile: the profile, choice: prof_admin/super_admin (type string)(default prof_admin)
         remote_auth: choice: enable/disable (type string)(default disable)
-            
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         password = str(password)
         objects =  [['name',name]]
         if not (self.Exists('cmdb/system/admin/', objects)):
             #object does not exist, create it
             return self.AddSystemAdmin(name, password, profile, remote_auth)
-        else: 
+        else:
             #object already Exists
             return 200
 
@@ -264,16 +264,16 @@ class Fortigate:
         Modify a system admin on the vdom.
 
         Parameters
-        ----------  
+        ----------
         name: the system admin name (type string)
         password: the system admin password (type string)
         profile: the profile, choice: prof_admin/super_admin (type string)(default prof_admin)
         remote_auth: choice: enable/disable (type string)(default disable)
-            
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         password = str(password)
         #profile: prof_admin/super_admin
@@ -288,16 +288,16 @@ class Fortigate:
                         "name":self.vdom,
                             }
                          ]
-                    }     
+                    }
                 }
         return self.ApiSet('cmdb/system/admin/'+ name + '/', payload)
-   
+
     def DelSystemAdmin(self, name):
         """
         Delete system admin object referenced by name.
 
         Parameters
-        ----------        
+        ----------
         name: object to delete (type string)
 
         Returns
@@ -307,7 +307,7 @@ class Fortigate:
         payload = {'json':
                 {
                 'name': 'admin'
-                }     
+                }
             }
         return self.ApiDelete('cmdb/system/admin/'+ name + '/', data=payload)
     #
@@ -316,9 +316,9 @@ class Fortigate:
         Return the json user local object, when the param name is defined it returns the selected object, without name: return all the objects.
 
         Parameters
-        ----------        
+        ----------
         name: the system admin object name (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -331,7 +331,7 @@ class Fortigate:
         Create a user local on the vdom.
 
         Parameters
-        ----------  
+        ----------
         name: the system admin name (type string)
         passwd: the system admin password (type string)
         type_user: set to 'password' for Local (type string)
@@ -343,7 +343,7 @@ class Fortigate:
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         passwd = str(passwd)
 
@@ -356,16 +356,16 @@ class Fortigate:
                     'email-to': email_to,
                     'ldap-server': ldap_server,
                     'radius-server': radius_server,
-                    }     
+                    }
                 }
         return self.ApiAdd('cmdb/user/local/', payload)
-    
+
     def AddUserLocalIdempotent(self, name, passwd, type_user='password', status='enable', email_to='', ldap_server='', radius_server=''):
         """
         Create a user local on the vdom, return ok if it already exist.
 
         Parameters
-        ----------  
+        ----------
         name: the system admin name (type string)
         passwd: the system admin password (type string)
         type_user: set to 'password' for Local (type string)
@@ -377,14 +377,14 @@ class Fortigate:
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         passwd = str(passwd)
         objects =  [['name',name],['type',type_user]]
         if not (self.Exists('cmdb/user/local/', objects)):
             #object does not exist, create it
-            return self.AddUserLocal(name, passwd, type_user, status, email_to, ldap_server, radius_server) 
-        else: 
+            return self.AddUserLocal(name, passwd, type_user, status, email_to, ldap_server, radius_server)
+        else:
             #object already Exists
             return 200
 
@@ -393,7 +393,7 @@ class Fortigate:
         Modify a user local on the vdom.
 
         Parameters
-        ----------  
+        ----------
         name: the system admin name (type string)
         passwd: the system admin password (type string)
         type_user: set to 'password' for Local (type string)
@@ -401,11 +401,11 @@ class Fortigate:
         email_to: (type string)(default'')
         ldap_server: (type string)(default'')
         radius_server: (type string)(default'')
-            
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         passwd = str(passwd)
 
@@ -418,7 +418,7 @@ class Fortigate:
                     'email-to': email_to,
                     'ldap-server': ldap_server,
                     'radius-server': radius_server,
-                    }     
+                    }
                 }
         return self.ApiSet('cmdb/user/local/'+ name + '/', payload)
 
@@ -427,7 +427,7 @@ class Fortigate:
         Delete user local object referenced by name.
 
         Parameters
-        ----------        
+        ----------
         name: object to delete (type string)
 
         Returns
@@ -437,16 +437,16 @@ class Fortigate:
         payload = {'json':
                 {
                 'name': 'local'
-                }     
+                }
             }
         return self.ApiDelete('cmdb/user/local/' + name + '/', data=payload)
-    
+
     def DelAllUserLocal(self):
         """
         Delete all user local object of the vdom.
 
         Parameters
-        ----------        
+        ----------
 
         Returns
         -------
@@ -461,14 +461,14 @@ class Fortigate:
             if return_code != 200: return return_code
         return 200
     #
-    def GetInterface(self, name=''):
+    def GetInterface(self, name='', current_vdom_only=True):
         """
         Return the json interface object, when the param id is defined it returns the selected object, without id: return all the objects
-                
+
         Parameters
         ----------
         name: the object name or nothing (type string)
- 
+
         Returns
         -------
         Return the json fw interface object
@@ -477,22 +477,23 @@ class Fortigate:
         result = []
         data = json.loads(req.text)
         #search for current vdom only
-        for y in range(0,len(data['results'])):
-               if self.vdom == data['results'][y]['vdom']:
-                   result.append(data['results'][y])
+        if current_vdom_only:
+            result = list(filter(lambda x: x['vdom'] == self.vdom, data['results']))
+        else:
+            result = data['results']
         return json.dumps(result, indent=4)
-    
+
     def AddLoopbackInterface(self, name, ip_mask, vdom, allowaccess=''):
         """
         Create a loopback interface on the vdom.
 
         Parameters
-        ----------       
+        ----------
         name: the name of the loopback int (type string)
         ip_mask: the ip and mask (for ex: 1.1.1.1 255.255.255.255 or 1.1.1.1/32)(type string)
         vdom: the existing vdom of the loopback (type string)
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)(default none)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -506,10 +507,10 @@ class Fortigate:
         payload = { 'json':
                     {
                     'name': name,
-                    'type': 'loopback', 
+                    'type': 'loopback',
                     'ip': ip_mask,
-                    'vdom': vdom, 
-                    'mode': 'static', 
+                    'vdom': vdom,
+                    'mode': 'static',
                     'status': 'up',
                     'secondary-IP': 'disable',
                     'alias':'',
@@ -517,7 +518,7 @@ class Fortigate:
                         "ip6-extra-addr": []
                      },
                     'allowaccess': allowaccess
-                    }   
+                    }
                 }
         return self.ApiAdd('cmdb/system/interface/', payload)
 
@@ -526,12 +527,12 @@ class Fortigate:
         Create a loopback interface on the vdom, return ok if it already exists.
 
         Parameters
-        ----------       
+        ----------
         name: the name of the loopback int (type string)
         ip_mask: the ip and mask (for ex: 1.1.1.1 255.255.255.255 or 1.1.1.1/32)(type string)
         vdom: the existing vdom of the loopback (type string)
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -540,25 +541,25 @@ class Fortigate:
         ip_mask = str(ip_mask)
         vdom = str(vdom)
         allowaccess = str(allowaccess)
-        objects =  [['name',name],['ip',ip_mask]] 
+        objects =  [['name',name],['ip',ip_mask]]
         if not (self.Exists('cmdb/system/interface/', objects)):
             #object does not exist, create it
             return self.AddLoopbackInterface(name, ip_mask, vdom, allowaccess)
-        else: 
+        else:
             #object already Exists
             return 200
-            
+
     def SetLoopbackInterface(self, name, ip_mask, vdom, allowaccess=''):
         """
         Modify a loopback interface on the vdom.
 
         Parameters
-        ----------       
+        ----------
         name: the name of the loopback int (type string)
         ip_mask: the ip and mask (for ex: 1.1.1.1 255.255.255.255 or 1.1.1.1/32)(type string)
         vdom: the existing vdom of the loopback (type string)
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -572,10 +573,10 @@ class Fortigate:
         payload = { 'json':
                     {
                     'name': name,
-                    'type': 'loopback', 
+                    'type': 'loopback',
                     'ip': ip_mask,
-                    'vdom': vdom, 
-                    'mode': 'static', 
+                    'vdom': vdom,
+                    'mode': 'static',
                     'status': 'up',
                     'secondary-IP': 'disable',
                     'alias':'',
@@ -583,7 +584,7 @@ class Fortigate:
                         "ip6-extra-addr": []
                      },
                     'allowaccess': allowaccess
-                    }   
+                    }
                 }
         return self.ApiSet('cmdb/system/interface/' + name + '/', payload)
 
@@ -593,14 +594,14 @@ class Fortigate:
         You must have access on the root vdom to use this method.
 
         Parameters
-        ----------       
+        ----------
         name: the name of the interface vlan (type string)
         interface: the physical interface which you going to attach the vlan to (type string)
         vlanid: the vlan vlan id (type string)
         ip_mask: the ip and mask (for ex: 1.1.1.1 255.255.255.255 or 1.1.1.1/32)(type string)
         vdom: the existing vdom of the loopback (type string)
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)
-        mode: security mode: choice none or 
+        mode: security mode: choice none or
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)(default none)
 
         Returns
@@ -618,11 +619,11 @@ class Fortigate:
                     {
                     'name': name,
                     'vlanid': vlanid,
-                    'vdom': vdom,     
+                    'vdom': vdom,
                     'interface': interface,
-                    'type': 'vlan', 
-                    'ip': ip_mask, 
-                    'mode': mode, 
+                    'type': 'vlan',
+                    'ip': ip_mask,
+                    'mode': mode,
                     'status': 'up',
                     "dhcp-relay-service":"disable",
                     "dhcp-relay-ip":"",
@@ -633,7 +634,7 @@ class Fortigate:
                         "ip6-extra-addr": []
                      },
                     'allowaccess': allowaccess
-                    }   
+                    }
                 }
         #return self.ApiAdd('cmdb/system/interface/', payload)
         url = 'cmdb/system/interface/'
@@ -648,14 +649,14 @@ class Fortigate:
         You must have access on the root vdom to use this method.
 
         Parameters
-        ----------       
+        ----------
         name: the name of the interface vlan (type string)
         interface: the physical interface which you going to attach the vlan to (type string)
         vlanid: the vlan vlan id (type string)
         ip_mask: the ip and mask (for ex: 1.1.1.1 255.255.255.255 or 1.1.1.1/32)(type string)
         vdom: the existing vdom of the loopback (type string)
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)
-        mode: security mode: choice none or 
+        mode: security mode: choice none or
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)(default none)
 
         Returns
@@ -669,11 +670,11 @@ class Fortigate:
         vdom = str(vdom)
         mode = str(mode)
         allowaccess = str(allowaccess)
-        objects =  [['name',name],['interface',interface],['vlanid', int(vlanid)],['ip',ip_mask]] 
+        objects =  [['name',name],['interface',interface],['vlanid', int(vlanid)],['ip',ip_mask]]
         if not (self.Exists('cmdb/system/interface/', objects)):
             #object does not exist, create it
             return self.AddVlanInterface(name, interface, vlanid, ip_mask, vdom, mode, allowaccess)
-        else: 
+        else:
             #object already Exist
             return 200
 
@@ -682,14 +683,14 @@ class Fortigate:
         Modify an interface on the vdom.
 
         Parameters
-        ----------       
+        ----------
         name: the name of the interface vlan (type string)
         interface: the physical interface which you going to attach the vlan to (type string)
         vlanid: the vlan vlan id (type string)
         ip_mask: the ip and mask (for ex: 1.1.1.1 255.255.255.255 or 1.1.1.1/32)(type string)
         vdom: the existing vdom of the loopback (type string)
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)
-        mode: security mode: choice none or 
+        mode: security mode: choice none or
         allowaccess: choice in: ping/http/https/ssh/snmp separated with space (for ex: 'ping ssh http')(type string)(default none)
 
         Returns
@@ -707,11 +708,11 @@ class Fortigate:
                     {
                     'name': name,
                     'vlanid': vlanid,
-                    'vdom': vdom,     
+                    'vdom': vdom,
                     'interface': interface,
-                    'type': 'vlan', 
-                    'ip': ip_mask, 
-                    'mode': mode, 
+                    'type': 'vlan',
+                    'ip': ip_mask,
+                    'mode': mode,
                     'status': 'up',
                     "dhcp-relay-service":"disable",
                     "dhcp-relay-ip":"",
@@ -722,18 +723,18 @@ class Fortigate:
                         "ip6-extra-addr": []
                      },
                     'allowaccess': allowaccess
-                    }   
+                    }
                 }
         return self.ApiSet('cmdb/system/interface/' + name + '/', data=payload)
 
 
-    
+
     def DelInterface(self, name):
         """
         Delete fw interface object referenced by name.
 
         Parameters
-        ----------        
+        ----------
         name: object to delete (type string)
 
         Returns
@@ -743,7 +744,7 @@ class Fortigate:
         payload = {'json':
                 {
                 'name': 'interface'
-                }     
+                }
             }
         return self.ApiDelete('cmdb/system/interface/' + name + '/', data=payload)
 
@@ -752,7 +753,7 @@ class Fortigate:
         Delete all fw interface object of the vdom.
 
         Parameters
-        ----------        
+        ----------
 
         Returns
         -------
@@ -775,9 +776,9 @@ class Fortigate:
         Return the json fw address object, when the param name is defined it returns the selected object, without name: return all the objects.
 
         Parameters
-        ----------        
+        ----------
         name: the fw address object name (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -790,16 +791,16 @@ class Fortigate:
         Create address  on the firewall.
 
         Parameters
-        ----------  
+        ----------
         name: the fw address object name (type string)
         subnet: the ip address and masq, (for ex: '1.1.1.1 255.255.255.255' or '1.1.1.1/32') (type string)
         associated_interface: interface of the object, leave blank for 'Any' (default: Any) (type string)
         comment: (default none) (type string)
-            
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         subnet = str(subnet)
         associated_interface = str(associated_interface)
@@ -807,10 +808,10 @@ class Fortigate:
                     {
                     'name': name,
                     'type': 'ipmask',
-                    'subnet': subnet, 
+                    'subnet': subnet,
                     'associated-interface': associated_interface,
                     'comment': comment
-                    }     
+                    }
                 }
         return self.ApiAdd('cmdb/firewall/address/', payload)
 
@@ -819,17 +820,17 @@ class Fortigate:
         Create address range on the firewall.
 
         Parameters
-        ----------  
+        ----------
         name: the fw address object name (type string)
         start_ip: the first ip address of the range (type string)
         end_ip: the last ip address of the range (type string)
         associated_interface: interface of the object, leave blank for 'Any' (default: Any) (type string)
         comment: (default none) (type string)
-            
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         start_ip = str(start_ip)
         end_ip = str(end_ip)
@@ -838,11 +839,11 @@ class Fortigate:
                     {
                     'name':  name ,
                     'type': 'iprange',
-                    'start-ip': start_ip, 
-                    'end-ip': end_ip, 
+                    'start-ip': start_ip,
+                    'end-ip': end_ip,
                     'associated-interface': associated_interface,
                     'comment': comment
-                    }     
+                    }
                 }
         return self.ApiAdd('cmdb/firewall/address/', payload)
 
@@ -852,20 +853,20 @@ class Fortigate:
         Create address object on the firewall, if the object already exist return ok.
 
         Parameters
-        ----------  
+        ----------
         name: the fw address object name (type string)
         subnet: the ip address and masq, (for ex: '1.1.1.1 255.255.255.255' or '1.1.1.1/32') (type string)
         associated_interface: interface of the object, leave blank for 'Any' (default: Any) (type string)
         comment: (default none) (type string)
-                
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         subnet = str(subnet)
         associated_interface = str(associated_interface)
-        
+
         return_code = self.AddFwAddress(name, subnet, associated_interface, comment)
         if  return_code != 200:
             #creation failed, check to see if the object already exists
@@ -873,24 +874,24 @@ class Fortigate:
             if self.Exists('cmdb/firewall/address/', objects):
                 return_code = 200
         return return_code
-        
-    
+
+
 
     def SetFwAddress(self, name, subnet, associated_interface='', comment=''):
         """
         Modify address object on the firewall.
 
         Parameters
-        ---------- 
+        ----------
         name: the fw address object name (type string)
         subnet: the ip address and masq, (for ex: '1.1.1.1 255.255.255.255' or '1.1.1.1/32') (type string)
         associated_interface: interface of the object, leave blank for 'Any' (default: Any) (type string)
         comment: (default none) (type string)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         subnet = str(subnet)
         associated_interface = str(associated_interface)
@@ -899,23 +900,23 @@ class Fortigate:
                     'name':  name ,
                     'associated-interface': associated_interface,
                     'comment': comment,
-                    'subnet':  subnet 
-                    }     
+                    'subnet':  subnet
+                    }
                 }
-        return self.ApiSet('cmdb/firewall/address/' + name + '/', payload)    
-    
+        return self.ApiSet('cmdb/firewall/address/' + name + '/', payload)
+
     def DelFwAddress(self, name):
         """
         Delete fw address  object referenced by name.
 
         Parameters
-        ----------        
+        ----------
         name : the fw address name (type string)
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """  
+        """
         payload = {'json':
                     {
                     'name': name
@@ -928,12 +929,12 @@ class Fortigate:
         Delete all the fw address on the vdom.
 
         Parameters
-        ----------        
+        ----------
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         req = self.ApiGet('cmdb/firewall/address/')
         data = json.loads(req.text)
         for y in range(0,len(data['results'])):
@@ -948,9 +949,9 @@ class Fortigate:
         Return the json address group object, when the param name is defined it returns the selected object, without name: return all the objects.
 
         Parameters
-        ----------        
+        ----------
         name: the address group object name (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -963,14 +964,14 @@ class Fortigate:
         Create address group on the firewall.
 
         Parameters
-        ----------   
+        ----------
         name : the group name (type string)
         member_list : the list of existing objects to add to the group (type [])
-                
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """   
+        """
         name = str(name)
         member = []
         for member_elem in member_list:
@@ -979,7 +980,7 @@ class Fortigate:
                     {
                     'name':  name,
                     'member': member
-                    }     
+                    }
                 }
         return self.ApiAdd('cmdb/firewall/addrgrp/', payload)
 
@@ -988,16 +989,16 @@ class Fortigate:
         Create address group on the firewall, if the object already exist return ok.
 
         Parameters
-        ----------  
+        ----------
         name : the group name (type string)
         member_list : the list of existing objects to add to the group (type [])
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
-   
+
         return_code = self.AddFwAddressGroup(name, member_list)
         if  return_code != 200:
             #creation failed, check to see if the object already exists
@@ -1012,14 +1013,14 @@ class Fortigate:
         Modify the members of the address group on the firewall.
 
         Parameters
-        ----------   
+        ----------
         name : the group name (type string)
         member_list : the modified list of objects for the group (type [])
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         member = []
         for member_elem in member_list:
@@ -1027,7 +1028,7 @@ class Fortigate:
         payload = {'json':
                     {
                     'member': member
-                    }     
+                    }
                 }
         return self.ApiSet('cmdb/firewall/addrgrp/' + name + '/', payload)
 
@@ -1036,31 +1037,31 @@ class Fortigate:
         Delete address group object referenced by name.
 
         Parameters
-        ----------        
+        ----------
         name : the group name (type string)
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """  
+        """
         payload = {'json':
                     {
                     'name': name
-                    }     
+                    }
                 }
         return self.ApiDelete('cmdb/firewall/addrgrp/', payload)
-    
+
     def DelAllFwAddressGroup(self):
         """
         Delete all the address group on the vdom.
 
         Parameters
-        ----------        
+        ----------
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """  
+        """
         req = self.ApiGet('cmdb/firewall/addrgrp/')
         data = json.loads(req.text)
         for y in range(0,len(data['results'])):
@@ -1077,7 +1078,7 @@ class Fortigate:
         Parameters
         ----------
         id: the static route id (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -1091,7 +1092,7 @@ class Fortigate:
         Create a static route on the firewall.
 
         Parameters
-        ----------   
+        ----------
         dst: the destination, example '1.1.1.1 255.255.255.0' (type string)
         device: (type string)
         gateway: (type string)
@@ -1100,7 +1101,7 @@ class Fortigate:
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """   
+        """
         dst = str(dst)
         device = str(device)
         gateway = str(gateway)
@@ -1110,7 +1111,7 @@ class Fortigate:
                     'device': device,
                     'gateway': gateway,
                     'comment': comment
-                    }     
+                    }
                 }
         return self.ApiAdd('cmdb/router/static/', payload)
 
@@ -1119,7 +1120,7 @@ class Fortigate:
         Create a static route on the firewall, return ok if it already exists.
 
         Parameters
-        ----------   
+        ----------
         dst: the destination, example '1.1.1.1 255.255.255.0' (type string)
         device: (type string)
         gateway: (type string)
@@ -1140,13 +1141,13 @@ class Fortigate:
             if self.Exists('cmdb/router/static/', objects):
                 return_code = 200
         return return_code
-    
+
     def SetRouterStatic(self, id, dst, device, gateway, comment=''):
         """
         Modify a static route (referenced by his id) on the firewall.
 
         Parameters
-        ----------   
+        ----------
         id: the reference of the static route (type string)
         dst: the destination, example '1.1.1.1 255.255.255.0' (type string)
         device: (type string)
@@ -1166,7 +1167,7 @@ class Fortigate:
                     'device': device,
                     'gateway': gateway,
                     'comment': comment
-                    }     
+                    }
                 }
         return self.ApiSet('cmdb/router/static/' + str(id) + '/', payload)
 
@@ -1175,20 +1176,20 @@ class Fortigate:
         Delete the route selected with his id.
 
         Parameters
-        ----------       
+        ----------
         id: the route id to delete (type string)
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """  
+        """
         payload = {'json':
                 {
                 'name': 'static'
-                }     
+                }
             }
         return self.ApiDelete('cmdb/router/static/' + str(id) + '/', data=payload)
-    
+
 
 
     def DelRouterStatic(self, dst):
@@ -1196,20 +1197,20 @@ class Fortigate:
         Delete the route selected with his destination parameter.
 
         Parameters
-        ----------       
+        ----------
         dst: the destination route to delete ( example '1.1.1.1 255.255.255.0')(type string)
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         req = self.ApiGet('cmdb/router/static/')
         data = json.loads(req.text)
         # search for router static ID with specific dst
         for x in range(0,len(data['results'])):
             if (dst == data['results'][x]['dst']):
                 # ID is found : delete it
-                return self.DelRouterStaticID(data['results'][x]['seq-num'])	
+                return self.DelRouterStaticID(data['results'][x]['seq-num'])
         return 404
 
     def DelAllRouterStatic(self):
@@ -1217,12 +1218,12 @@ class Fortigate:
         Delete all the route of the vdom.
 
         Parameters
-        ----------       
+        ----------
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         req = self.ApiGet('cmdb/router/static/')
         data = json.loads(req.text)
         for y in range(0,len(data['results'])):
@@ -1235,11 +1236,11 @@ class Fortigate:
     def GetFwPolicyID(self, id=''):
         """
         Return the json fw policy object, when the param id is defined it returns the selected object, without id: return all the objects
-                
+
         Parameters
         ----------
         id: the object id or nothing (type string)
- 
+
         Returns
         -------
         Return the json fw policy object
@@ -1284,22 +1285,22 @@ class Fortigate:
                     'srcintf': [
                             {
                              'name': srcintf
-                            } 
+                            }
                     ],
                     'dstintf': [
                             {
                              'name': dstintf
-                            } 
-                    ],       
+                            }
+                    ],
                     'srcaddr': [
                             {
                              'name': srcaddr
-                            } 
+                            }
                     ],
                     'dstaddr': [
                             {
                              'name': dstaddr
-                            } 
+                            }
                     ],
                     'action': action,
                     'schedule': schedule,
@@ -1312,15 +1313,15 @@ class Fortigate:
                     'poolname': [
                             {
                              'name': poolname
-                            } 
+                            }
                     ],
                     'service': [
                             {
                              'name': service
-                            } 
+                            }
                     ],
                     'comments': comments
-                    }     
+                    }
                 }
         return self.ApiAdd('cmdb/firewall/policy/', payload)
 
@@ -1355,12 +1356,12 @@ class Fortigate:
         dstaddr= str(dstaddr)
         service= str(service)
         action= str(action)
-        objects =  [['srcintf',srcintf],['dstintf',dstintf],['srcaddr',srcaddr],['dstaddr',dstaddr],['service',service],['action',action],['schedule',schedule],['nat',nat],['poolname',poolname],['ippool',ippool],['status',status],['traffic-shaper',traffic_shaper],['traffic-shaper-reverse',traffic_shaper_reverse]] 
+        objects =  [['srcintf',srcintf],['dstintf',dstintf],['srcaddr',srcaddr],['dstaddr',dstaddr],['service',service],['action',action],['schedule',schedule],['nat',nat],['poolname',poolname],['ippool',ippool],['status',status],['traffic-shaper',traffic_shaper],['traffic-shaper-reverse',traffic_shaper_reverse]]
         if not (self.Exists('cmdb/firewall/policy/', objects)):
             #object does not exist, create it
             #print('AddFwPolicyIdempotent: object does not exists')
             return self.AddFwPolicy(srcintf, dstintf, srcaddr, dstaddr, service, action, schedule, nat, poolname, ippool, status, comments, traffic_shaper, traffic_shaper_reverse)
-        else: 
+        else:
             #object already Exists
             #print('AddFwPolicyIdempotent: object already exists')
             return 200
@@ -1404,22 +1405,22 @@ class Fortigate:
                     'srcintf': [
                             {
                              'name': srcintf
-                            } 
+                            }
                     ],
                     'dstintf': [
                             {
                              'name': dstintf
-                            } 
-                    ],       
+                            }
+                    ],
                     'srcaddr': [
                             {
                              'name': srcaddr
-                            } 
+                            }
                     ],
                     'dstaddr': [
                             {
                              'name': dstaddr
-                            } 
+                            }
                     ],
                     'action': action,
                     'schedule': schedule,
@@ -1432,21 +1433,21 @@ class Fortigate:
                     'poolname': [
                             {
                              'name': poolname
-                            } 
+                            }
                     ],
                     'service': [
                             {
                              'name': service
-                            } 
+                            }
                     ],
                     'comments': comments
-                    }     
+                    }
                 }
         return self.ApiSet('cmdb/firewall/policy/'+ id +'/', payload)
 
 
 
-    
+
 
 
     def DelFwPolicy(self, srcintf='any', dstintf='any', srcaddr='all', dstaddr='all', service='ALL'):
@@ -1460,7 +1461,7 @@ class Fortigate:
         srcaddr: source address (type string)(default any)
         dstaddr: destination address (type string)(default any)
         service: service (type string)(default ALL)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -1468,9 +1469,9 @@ class Fortigate:
         fw_id = self.SearchFwPolicyID(srcintf, dstintf, srcaddr, dstaddr, service)
         if fw_id != 0:
             return self.DelFwPolicyID(fw_id)
-        else:    
+        else:
             return 404
-       
+
     def DelFwPolicyID(self, id):
         """
         Delete the policy which is referenced by his ID.
@@ -1478,7 +1479,7 @@ class Fortigate:
         Parameters
         ----------
         id: the id of the policy to delete (type string)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -1486,17 +1487,17 @@ class Fortigate:
         payload = {'json':
                 {
                 'name': 'policy'
-                }     
+                }
             }
-        return self.ApiDelete('cmdb/firewall/policy/' + str(id) + '/', data=payload) 
-    
+        return self.ApiDelete('cmdb/firewall/policy/' + str(id) + '/', data=payload)
+
     def DelAllFwPolicy(self):
         """
         Delete all the policy of the vdom.
 
         Parameters
         ----------
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -1509,11 +1510,11 @@ class Fortigate:
             print('del fw policy id:', policy_id ,  '(', return_code,')')
             if return_code != 200: return return_code
         return 200
-    
+
     def SearchFwPolicyID(self, srcintf='', dstintf='', srcaddr='', dstaddr='', service='', action='', schedule='', nat='', poolname='[]', ippool='', status='', comments='', traffic_shaper='', traffic_shaper_reverse=''):
         """
         Search a policy id from his parameters and return his ID.
-        
+
         Parameters
         ----------
         srcintf: source interface (type string)(default any)
@@ -1536,22 +1537,22 @@ class Fortigate:
         the id of the policy or 0 if the policy was not found
         """
         objects = []
-        if srcintf != '': 
+        if srcintf != '':
             objects.append(['srcintf',srcintf])
         if dstintf != '':
             objects.append(['dstintf',dstintf])
-        if srcaddr != '': 
+        if srcaddr != '':
             objects.append(['srcaddr',srcaddr])
         if dstaddr != '':
             objects.append(['dstaddr',dstaddr])
-        if service != '': 
+        if service != '':
             objects.append(['service',service])
         if action != '':
             objects.append(['action',action])
         if schedule != '':
-            objects.append(['schedule',schedule])   
+            objects.append(['schedule',schedule])
         if nat != '':
-            objects.append(['nat',nat]) 
+            objects.append(['nat',nat])
         if poolname != '[]':
             objects.append(['poolname',poolname])
         if ippool != '':
@@ -1564,7 +1565,7 @@ class Fortigate:
             objects.append(['traffic-shaper',traffic_shaper])
         if traffic_shaper_reverse != '':
             objects.append(['traffic-shaper-reverse',traffic_shaper_reverse])
-        
+
         print(objects)
 
         #get all fw policy
@@ -1572,7 +1573,7 @@ class Fortigate:
         data = json.loads(req.text)
         #parse policy one by one
         for y in range(0,len(data['results'])):
-            identical = True 
+            identical = True
             #compare every parameters objects which is not null
             for x in range(0,len(objects)):
                 req_res = data['results'][y][objects[x][0]]
@@ -1585,7 +1586,7 @@ class Fortigate:
                     print('object is different:', objects[x][0], ':', objects[x][1] ,'to', req_res)
                     identical = False
                     break
-            if identical: 
+            if identical:
                 #print('policyid:', data['results'][y]['policyid'])
                 return data['results'][y]['policyid']
         return 0
@@ -1595,9 +1596,9 @@ class Fortigate:
         Return the json fw service object, when the param name is defined it returns the selected object, without name: return all the objects.
 
         Parameters
-        ----------        
+        ----------
         name: the fw service object name (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -1617,7 +1618,7 @@ class Fortigate:
         fqdn: (type string)
         iprange: (type string)
         comment: (type string)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -1636,13 +1637,13 @@ class Fortigate:
             'udp-portrange': udp_portrange,
             'protocol':  protocol,
             'protocol-number': protocol_number,
-            'fqdn': fqdn, 
+            'fqdn': fqdn,
             'iprange': iprange,
             'comment': comment
-            }     
+            }
         }
         return self.ApiAdd('cmdb/firewall.service/custom/', payload)
-    
+
     def AddFwServiceIdempotent(self,name, tcp_portrange='', udp_portrange='', protocol='TCP/UDP/SCTP', fqdn='', iprange='0.0.0.0',  comment=''):
         '''
         Add a fw service object, return ok if the object already exists.
@@ -1664,7 +1665,7 @@ class Fortigate:
         tcp_portrange = str(tcp_portrange)
         udp_portrange = str(udp_portrange)
         protocol = str(protocol)
-    
+
         return_code = self.AddFwService(name, tcp_portrange, udp_portrange, protocol, fqdn, iprange, comment)
         if  return_code != 200:
             #creation failed, check to see if the object already exists
@@ -1705,10 +1706,10 @@ class Fortigate:
             'udp-portrange': udp_portrange,
             'protocol':  protocol,
             'protocol-number': protocol_number,
-            'fqdn': fqdn, 
+            'fqdn': fqdn,
             'iprange': iprange,
             'comment': comment
-            }     
+            }
         }
         return self.ApiSet('cmdb/firewall.service/custom/' + name + '/', payload)
 
@@ -1717,31 +1718,31 @@ class Fortigate:
         Delete fw service object referenced by name.
 
         Parameters
-        ----------        
+        ----------
         name: object to delete (type string)
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """        
+        """
         payload = {'json':
                 {
                 'name': name
-                }     
+                }
             }
         return self.ApiDelete('cmdb/firewall.service/custom/', payload)
-    
+
     def DelAllFwService(self):
         """
         Delete all the fw service of the vdom.
-        
+
         Parameters
         ----------
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """        
+        """
         req = self.ApiGet('cmdb/firewall.service/custom/')
         data = json.loads(req.text)
         for y in range(0,len(data['results'])):
@@ -1758,27 +1759,27 @@ class Fortigate:
         Parameters
         ----------
         name: the group name (type string)
-        
+
         Returns
         -------
         Return the json object
         """
         req = self.ApiGet('cmdb/firewall.service/group/' + name)
         return req.text
-    
+
     def AddFwServiceGroup(self, name, member_list):
         """
         Create fw service group on the firewall.
-        
+
         Parameters
         ----------
         name : the group name (type string)
         member_list : the list of existing objects to add to the group (type [])
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """       
+        """
         name = str(name)
         member = []
         for member_elem in member_list:
@@ -1787,7 +1788,7 @@ class Fortigate:
                     {
                     'name':  name,
                     'member': member
-                    }     
+                    }
                 }
         return self.ApiAdd('cmdb/firewall.service/group/', payload)
 
@@ -1796,16 +1797,16 @@ class Fortigate:
         Create fw service group on the firewall, return ok if the group already exists.
 
         Parameters
-        ----------        
+        ----------
         name : the group name (type string)
-        member_list : the list of existing objects to add to the group (type [])      
-        
+        member_list : the list of existing objects to add to the group (type [])
+
         Returns
-        -------        
+        -------
         Http status code: 200 if ok, 4xx if an error occurs
         """
         name = str(name)
-        
+
         return_code = self.AddFwServiceGroup(name, member_list)
         if  return_code != 200:
             #creation failed, check to see if the object already exists
@@ -1814,19 +1815,19 @@ class Fortigate:
                 return_code = 200
         return return_code
 
-    
+
     def SetFwServiceGroup(self, name, member_list):
         """
         Modify fw service group on the firewall.
 
         Parameters
-        ----------        
+        ----------
         name : the group name (type string)
         member_list : the list of existing objects to add to the group (type [])
-        
+
         Returns
-        -------    
-        Http status code: 200 if ok, 4xx if an error occurs    
+        -------
+        Http status code: 200 if ok, 4xx if an error occurs
         """
         name = str(name)
         member = []
@@ -1835,7 +1836,7 @@ class Fortigate:
         payload = {'json':
                     {
                     'member': member
-                    }     
+                    }
                 }
         return self.ApiSet('cmdb/firewall.service/group/'+ name + '/', payload)
 
@@ -1846,7 +1847,7 @@ class Fortigate:
         Parameters
         ----------
         name: the group name (type string)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -1854,17 +1855,17 @@ class Fortigate:
         payload = {'json':
                     {
                     'name': name
-                    }     
+                    }
                 }
-        return self.ApiDelete('cmdb/firewall.service/group/', payload)    
-    
+        return self.ApiDelete('cmdb/firewall.service/group/', payload)
+
     def DelAllFwServiceGroup(self):
         """
         Delete all fw service group of the vdom.
-        
+
         Parameters
         ----------
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -1885,14 +1886,14 @@ class Fortigate:
         Parameters
         ----------
         name: the traffic shaper name (type string)
-        
+
         Returns
         -------
         Return the json object
         """
         req = self.ApiGet('cmdb/firewall.shaper/traffic-shaper/' + name)
         return req.text
-    
+
     def AddTrafficShaper(self, name, per_policy, priority, guaranteed_bandwidth, maximum_bandwidth, diffserv='disable', diffservcode='000000'):
         """
         Add a shared traffic shaper on the vdom.
@@ -1918,12 +1919,12 @@ class Fortigate:
             'priority': priority,
             'guaranteed-bandwidth':  int(guaranteed_bandwidth),
             'maximum-bandwidth': int(maximum_bandwidth),
-            'diffserv': diffserv, 
+            'diffserv': diffserv,
             'diffservcode': diffservcode
-            }     
+            }
         }
         return self.ApiAdd('cmdb/firewall.shaper/traffic-shaper/', payload)
-    
+
     def AddTrafficShaperIdempotent(self, name, per_policy, priority, guaranteed_bandwidth, maximum_bandwidth, diffserv='disable', diffservcode='000000'):
         """
         Add a shared traffic shaper on the vdom, return ok if it already exists.
@@ -1975,9 +1976,9 @@ class Fortigate:
             'priority': priority,
             'guaranteed-bandwidth':  int(guaranteed_bandwidth),
             'maximum_bandwidth': int(maximum_bandwidth),
-            'diffserv': diffserv, 
+            'diffserv': diffserv,
             'diffservcode': diffservcode
-            }     
+            }
         }
         return self.ApiSet('cmdb/firewall.shaper/traffic-shaper/'+ name +'/', payload)
 
@@ -1988,7 +1989,7 @@ class Fortigate:
         Parameters
         ----------
         name: the shaper to delete (type string)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -1996,17 +1997,17 @@ class Fortigate:
         payload = {'json':
                     {
                     'name': name
-                    }     
+                    }
                 }
-        return self.ApiDelete('cmdb/firewall.shaper/traffic-shaper/', payload)     
-    
+        return self.ApiDelete('cmdb/firewall.shaper/traffic-shaper/', payload)
+
     def DelAllTrafficShaper(self):
         """
         Delete all the shared traffic shaper of the vdom.
 
         Parameters
         ----------
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
@@ -2027,7 +2028,7 @@ class Fortigate:
         Parameters
         ----------
         name: the vip name (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -2050,11 +2051,11 @@ class Fortigate:
         extport: if you enable portforwarding, set the external ports (type string numerical range, ex: 20-21)
         mappedport: if you enable portforwarding, set the mapped ports (type string numerical range, ex: 20-21)
         comment: (type string)
-        
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """   
+        """
         name = str(name)
         extip = str(extip)
         extinff = str(extintf)
@@ -2071,10 +2072,10 @@ class Fortigate:
             'extport': extport,
             'mappedport': mappedport,
             'comment': comment
-            }     
+            }
         }
         return self.ApiAdd('cmdb/firewall/vip/', payload)
-    
+
     def AddFwVIPidempotent(self, name, extip, extintf, mappedip, portforward='disable', extport='0-65535', mappedport='0-65535', comment=''):
         """
         Create vip address, return ok if it already exists.
@@ -2094,12 +2095,12 @@ class Fortigate:
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         extip = str(extip)
         extinff = str(extintf)
         mappedip = str(mappedip)
-    
+
         return_code = self.AddFwVIP(name, extip, extintf, mappedip, portforward, extport, mappedport, comment)
         if  return_code != 200:
             #creation failed, check to see if the object already exists
@@ -2111,9 +2112,9 @@ class Fortigate:
     def SetFwVIP(self, name, extip, extintf, mappedip, portforward='disable', protocol='', extport='0-65535', mappedport='0-65535', comment=''):
         """
         Modify vip address.
-        
+
         Parameters
-        ----------        
+        ----------
         name: the vip name (type string)
         extip: the external ip (type string)
         extintf: the external interface (type string)
@@ -2123,11 +2124,11 @@ class Fortigate:
         extport: if you enable portforwarding, set the external ports (type string numerical range, ex: 20-21)
         mappedport: if you enable portforwarding, set the mapped ports (type string numerical range, ex: 20-21)
         comment: (type string)
-                
+
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         extip = str(extip)
         extinff = str(extintf)
@@ -2144,10 +2145,10 @@ class Fortigate:
             'extport': extport,
             'mappedport': mappedport,
             'comment': comment
-            }     
+            }
         }
         return self.ApiSet('cmdb/firewall/vip/'+ name + '/', payload)
-    
+
     def DelFwVIP(self, name):
         """
         Delete the vip object on the firewall vdom.
@@ -2159,14 +2160,14 @@ class Fortigate:
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """          
+        """
         payload = {'json':
                     {
                     'name': 'vip'
-                    }     
+                    }
                 }
-        return self.ApiDelete('cmdb/firewall/vip/' + name + '/', payload)  
-    
+        return self.ApiDelete('cmdb/firewall/vip/' + name + '/', payload)
+
     def DelAllFwVIP(self):
         """
         Delete all the vip object on the vdom.
@@ -2177,7 +2178,7 @@ class Fortigate:
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """  
+        """
         req = self.ApiGet('cmdb/firewall/vip/')
         data = json.loads(req.text)
         for y in range(0,len(data['results'])):
@@ -2194,24 +2195,24 @@ class Fortigate:
         Parameters
         ----------
         name: the ip pool name (type string)
-        
+
         Returns
         -------
         Return the json object
         """
         req = self.ApiGet('cmdb/firewall/ippool/' + name)
-        return req.text  
-    
+        return req.text
+
     def AddFwIPpool(self, name, startip, endip, type_pool='overload', internal_startip='0.0.0.0', internal_endip='0.0.0.0', arp_reply='enable',block_size='128', num_blocks_per_user='8', comment=''):
         """
         Create the ip pool on the firewall.
-        
+
         Parameters
-        ----------      
+        ----------
         name: the fw ip pool object name (type string)
         startip: the first ip of the external range (type string)
         endtip: the last ip of the external range (type string)
-        type_pool : type choice string: overload or one-to-one or fixed-port-range, default overload     
+        type_pool : type choice string: overload or one-to-one or fixed-port-range, default overload
         internal_startip: if the type is 'fixed-port-range', the first ip of the internal range (type string)
         internal_endip: if the type is 'fixed-port-range', the last ip of the internal range (type string)
         arp_enable: type choice string: enable or disable, default enable
@@ -2222,7 +2223,7 @@ class Fortigate:
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """   
+        """
         name = str(name)
         startip = str(startip)
         endip = str(endip)
@@ -2238,20 +2239,20 @@ class Fortigate:
             'block-size': block_size,
             'num-blocks-per-user': num_blocks_per_user,
             'comments': comment
-            }     
+            }
         }
         return self.ApiAdd('cmdb/firewall/ippool/', payload)
 
     def AddFwIPpoolIdempotent(self, name, startip, endip, type_pool='overload', internal_startip='0.0.0.0', internal_endip='0.0.0.0', arp_reply='enable',block_size='128', num_blocks_per_user='8', comment=''):
         """
         Create the ip pool on the firewall, return ok if it already exists.
-        
+
         Parameters
-        ----------      
+        ----------
         name: the fw ip pool object name (type string)
         startip: the first ip of the external range (type string)
         endtip: the last ip of the external range (type string)
-        type_pool : type choice string: overload or one-to-one or fixed-port-range, default overload     
+        type_pool : type choice string: overload or one-to-one or fixed-port-range, default overload
         internal_startip: if the type is 'fixed-port-range', the first ip of the internal range (type string)
         internal_endip: if the type is 'fixed-port-range', the last ip of the internal range (type string)
         arp_enable: type choice string: enable or disable, default enable
@@ -2262,11 +2263,11 @@ class Fortigate:
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         name = str(name)
         startip = str(startip)
         endip = str(endip)
-        
+
         return_code = self.AddFwIPpool(name, startip, endip, type_pool, internal_startip, internal_endip, arp_reply,block_size, num_blocks_per_user, comment)
         if  return_code != 200:
             #creation failed, check to see if the object already exists
@@ -2280,31 +2281,31 @@ class Fortigate:
         Delete the ip pool referenced by his name.
 
         Parameters
-        ----------        
+        ----------
         name: the name of the object (type string)
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """         
+        """
         payload = {'json':
                     {
                     'name': 'ippool'
-                    }     
+                    }
                 }
-        return self.ApiDelete('cmdb/firewall/ippool/' + name + '/', payload)  
+        return self.ApiDelete('cmdb/firewall/ippool/' + name + '/', payload)
 
     def DelAllFwIPpool(self):
         """
         Delete all the ip pool referenced in the vdom.
 
         Parameters
-        ----------        
+        ----------
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         req = self.ApiGet('cmdb/firewall/ippool/')
         data = json.loads(req.text)
         for y in range(0,len(data['results'])):
@@ -2312,9 +2313,9 @@ class Fortigate:
             return_code = self.DelFwIPpool(ippool_name)
             print('del ip pool:', ippool_name , 'res:', return_code)
             if return_code != 200: return return_code
-        return 200 
+        return 200
     #
-    
+
     def GetVPNipsecPhase1(self, name=''):
         """
         Return the json vpn phase1 object, when the param name is defined it returns the selected object, without name: return all the objects.
@@ -2322,7 +2323,7 @@ class Fortigate:
         Parameters
         ----------
         name: the group name (type string)
-        
+
         Returns
         -------
         Return the json object
@@ -2337,20 +2338,20 @@ class Fortigate:
         Parameters
         ----------
         name: the group name (type string)
-        
+
         Returns
         -------
         Return the json object
         """
         req_phase2 = self.ApiGet('cmdb/vpn.ipsec/phase2-interface/' + name)
-        return req_phase2.text 
+        return req_phase2.text
 
     def AddVPNipsecPhase1(self, name, interface, remote_gw, nattraversal, dpd, psk, ike_version, mode, proposal, dhgrp, keylife=28800, localid=''):
         """
         Create vpn ipsec tunnel phase1.
 
         Parameters
-        ----------        
+        ----------
         name: name of the phase1 (type string)
         interface: (type string)
         remote_gw: (ype string)
@@ -2375,19 +2376,19 @@ class Fortigate:
             'type': 'static',
             'interface': interface,
             'ip-version': 4,
-            'ike-version': int(ike_version), 
-            'local-gw': '0.0.0.0', 
+            'ike-version': int(ike_version),
+            'local-gw': '0.0.0.0',
             'nattraversal': nattraversal,
             'keylife': int(keylife),
             'authurl': 'psk',
-            'mode': mode, 
+            'mode': mode,
             'proposal': proposal,
             'localid': localid,
-            'dpd': dpd, 
-            'dhgrp': dhgrp, 
+            'dpd': dpd,
+            'dhgrp': dhgrp,
             'remote-gw': remote_gw,
             'psksecret': psk
-                }     
+                }
             }
         return self.ApiAdd('cmdb/vpn.ipsec/phase1-interface/', payload)
 
@@ -2396,7 +2397,7 @@ class Fortigate:
         Create vpn ipsec tunnel phase1, return ok if it already exist.
 
         Parameters
-        ----------        
+        ----------
         name:  name of the phase1 (type string)
         interface: (type string)
         remote_gw: (ype string)
@@ -2419,7 +2420,7 @@ class Fortigate:
         if not (self.Exists('cmdb/vpn.ipsec/phase1-interface/', objects)):
             #object does not exist, create it
             return self.AddVPNipsecPhase1(name, interface, remote_gw, nattraversal, dpd, psk, ike_version, mode, proposal, dhgrp, keylife, localid)
-        else: 
+        else:
             #object already Exists
             return 200
 
@@ -2428,7 +2429,7 @@ class Fortigate:
         Create vpn ipsec tunnel phase2.
 
         Parameters
-        ----------        
+        ----------
         name:  name of the phase2 (type string)
         phase1name: the name of the phase1 that already exist (type string)
         local_addr_type: local address type, choice subnet/IP range/IP address (type string)
@@ -2453,16 +2454,16 @@ class Fortigate:
             'phase1name': phase1name,
             'src-addr-type': local_addr_type,
             'src-subnet': local_subnet,
-            'dst-addr-type': remote_addr_type, 
-            'dst-subnet': remote_subnet, 
-            'proposal': proposal, 
-            'pfs': pfs, 
+            'dst-addr-type': remote_addr_type,
+            'dst-subnet': remote_subnet,
+            'proposal': proposal,
+            'pfs': pfs,
             'dhgrp': dhgrp,
             'replay': replay,
             'keepalive': keepalive,
             'keylife-type': keylife_type,
             'keylifeseconds': int(keylifeseconds)
-                }     
+                }
             }
         return self.ApiAdd('cmdb/vpn.ipsec/phase2-interface/', payload)
 
@@ -2471,7 +2472,7 @@ class Fortigate:
         Create vpn ipsec tunnel phase2.
 
         Parameters
-        ----------        
+        ----------
         name:  name of the phase2 (type string)
         phase1name: the name of the phase1 that already exist (type string)
         local_addr_type: local address type, choice subnet/IP range/IP address (type string)
@@ -2494,16 +2495,16 @@ class Fortigate:
         if not (self.Exists('cmdb/vpn.ipsec/phase2-interface/', objects)):
             #object does not exist, create it
             return self.AddVPNipsecPhase2(name, phase1name, local_addr_type, local_subnet, remote_addr_type, remote_subnet, proposal, pfs, dhgrp, replay, keepalive, keylife_type, keylifeseconds)
-        else: 
+        else:
             #object already Exists
             return 200
-    
+
     def DelVPNipsec(self, name):
         """
         Delete the phase1 and phase2 configuration of an ipsec vpn
-        
+
         Parameters
-        ----------        
+        ----------
         name: object to delete (type string)
 
         Returns
@@ -2519,7 +2520,7 @@ class Fortigate:
                 #print('del phase2:', cur_phase2)
                 self.DelVPNipsecPhase2(cur_phase2)
         #print('del phase1:', cur_phase1)
-        return self.DelVPNipsecPhase1(cur_phase1)      
+        return self.DelVPNipsecPhase1(cur_phase1)
 
 
     def DelVPNipsecPhase1(self, name):
@@ -2528,7 +2529,7 @@ class Fortigate:
         Must delete the phase2 first.
 
         Parameters
-        ----------        
+        ----------
         name: object to delete (type string)
 
         Returns
@@ -2538,16 +2539,16 @@ class Fortigate:
         payload = {'json':
                     {
                     'name': 'phase1-interface'
-                    }     
+                    }
                 }
-        return self.ApiDelete('cmdb/vpn.ipsec/phase1-interface/'+ name + '/', payload)  
+        return self.ApiDelete('cmdb/vpn.ipsec/phase1-interface/'+ name + '/', payload)
 
     def DelVPNipsecPhase2(self, name):
         """
         Delete the phase2 configuration of an ipsec vpn
 
         Parameters
-        ----------        
+        ----------
         name: object to delete (type string)
 
         Returns
@@ -2557,21 +2558,21 @@ class Fortigate:
         payload = {'json':
                     {
                     'name': 'phase2-interface'
-                    }     
+                    }
                 }
-        return self.ApiDelete('cmdb/vpn.ipsec/phase2-interface/'+ name + '/', payload) 
-    
+        return self.ApiDelete('cmdb/vpn.ipsec/phase2-interface/'+ name + '/', payload)
+
     def DelAllVPNipsec(self):
         """
         Delete all vpn of the vdom.
 
         Parameters
-        ----------        
+        ----------
 
         Returns
         -------
         Http status code: 200 if ok, 4xx if an error occurs
-        """ 
+        """
         req = self.ApiGet('cmdb/vpn.ipsec/phase1-interface/')
         data = json.loads(req.text)
         for y in range(0,len(data['results'])):
@@ -2579,4 +2580,4 @@ class Fortigate:
             return_code = self.DelVPNipsec(vpn_name)
             print('del vpn:', vpn_name , 'res:', return_code)
             if return_code != 200: return return_code
-        return 200 
+        return 200
